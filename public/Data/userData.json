@@ -1,0 +1,66 @@
+[
+  {
+    "userId": "12345",
+    "userName": "JohnDoe",
+    "userPassword": "password123",
+    "balance": 5000,
+    "transactionId": "txn001",
+    "deposit": {
+      "amount": 1000,
+      "status": "pending",
+      "image": "https://example.com/deposit-receipt.jpg"
+    },
+    "withdrawal": {
+      "amount": 500,
+      "status": null
+    }
+  },
+  {
+    "userId": "12346",
+    "userName": "JaneSmith",
+    "userPassword": "password456",
+    "balance": 3000,
+    "transactionId": "txn002",
+    "deposit": {
+      "amount": 1200,
+      "status": null,
+      "image": "https://example.com/deposit-receipt-002.jpg"
+    },
+    "withdrawal": {
+      "amount": 400,
+      "status": "pending"
+    }
+  },
+  {
+    "userId": "12347",
+    "userName": "AliceJohnson",
+    "userPassword": "password789",
+    "balance": 7000,
+    "transactionId": "txn003",
+    "deposit": {
+      "amount": 1500,
+      "status": "pending",
+      "image": "https://example.com/deposit-receipt-003.jpg"
+    },
+    "withdrawal": {
+      "amount": 600,
+      "status": null
+    }
+  },
+  {
+    "userId": "12348",
+    "userName": "BobWilliams",
+    "userPassword": "password321",
+    "balance": 2500,
+    "transactionId": "txn004",
+    "deposit": {
+      "amount": 900,
+      "status": null,
+      "image": "https://example.com/deposit-receipt-004.jpg"
+    },
+    "withdrawal": {
+      "amount": 350,
+      "status": "pending"
+    }
+  }
+]
