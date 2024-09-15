@@ -1,4 +1,3 @@
-// App.js
 import React, { useState } from "react";
 import {
   BrowserRouter as Router,
@@ -19,7 +18,6 @@ const App = () => {
 
         <Route path="/login" element={<Login setAdmin={setAdmin} />} />
 
-        {/* Uncomment this when AdminDashboard is ready */}
         <Route
           path="/dashboard"
           element={isAdmin ? <AdminDashboard isAdmin={isAdmin} /> : <Navigate to="/login" />}

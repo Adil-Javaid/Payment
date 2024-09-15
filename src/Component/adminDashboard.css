@@ -10,7 +10,6 @@ h2, h3 {
   font-family: 'Poppins', sans-serif;
 }
 
-/* Table styles for larger screens */
 .responsive-table {
   width: 100%;
   border-collapse: collapse;
@@ -70,7 +69,6 @@ h2, h3 {
   opacity: 0.9;
 }
 
-/* Mobile styles: Transform table rows into cards */
 @media (max-width: 768px) {
 
   .responsive-table {
@@ -111,7 +109,6 @@ h2, h3 {
     background-color: transparent;
   }
   
-  /* Use data-label to show the header name before the td value */
   .responsive-table td:before {
     content: attr(data-label);
     font-weight: bold;
@@ -125,7 +122,6 @@ h2, h3 {
     border-bottom: 0;
   }
 
-  /* Styling for buttons on mobile */
   .btn {
     display: inline-block;
     width: calc(50% - 10px);
@@ -142,14 +138,12 @@ h2, h3 {
     box-shadow: 0 4px 6px rgba(239, 68, 68, 0.4);
   }
 
-  /* Ensure that buttons and actions are aligned properly */
   .responsive-table tr td:last-child {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
-  /* Improve spacing and readability on small screens */
   .dashboard-container {
     padding: 10px;
   }
@@ -168,12 +162,10 @@ h2, h3 {
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
   }
 
-  /* Smooth scrolling for mobile */
   body {
     scroll-behavior: smooth;
   }
 
-  /* Ensure buttons are clearly visible on mobile */
   .btn {
     font-size: 1em;
   }
