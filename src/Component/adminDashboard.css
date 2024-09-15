@@ -1,81 +1,180 @@
 .dashboard-container {
   padding: 20px;
-  background-color: #f9f9f9;
+  background-color: #f4f4f4;
 }
 
 h2, h3 {
   color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: 'Poppins', sans-serif;
 }
 
+/* Table styles for larger screens */
 .responsive-table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-.responsive-table th, .responsive-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
+.responsive-table th,
+.responsive-table td {
+  padding: 15px;
   text-align: center;
+  font-family: 'Roboto', sans-serif;
 }
 
 .responsive-table th {
-  background-color: #4CAF50;
+  background-color: #3b82f6;
   color: white;
+  text-transform: uppercase;
 }
 
-.responsive-table tr:nth-child(even) {
-  background-color: #f2f2f2;
+.responsive-table td {
+  background-color: #ffffff;
+  color: #333;
 }
 
-.responsive-table tr:hover {
-  background-color: #ddd;
+.responsive-table tr:nth-child(even) td {
+  background-color: #f9f9f9;
+}
+
+.responsive-table tr:hover td {
+  background-color: #e3e3e3;
 }
 
 .btn {
-  padding: 8px 12px;
+  margin: 5px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-family: 'Poppins', sans-serif;
 }
 
 .approve-btn {
-  background-color: #28a745;
+  background-color: #34d399;
   color: white;
 }
 
 .decline-btn {
-  background-color: #dc3545;
+  background-color: #ef4444;
   color: white;
 }
 
 .btn:hover {
-  opacity: 0.8;
+  opacity: 0.9;
 }
 
+/* Mobile styles: Transform table rows into cards */
 @media (max-width: 768px) {
-  .responsive-table thead {
+
+  .responsive-table {
+    border: 0;
+    display: block;
+  }
+
+  .responsive-table thead{
     display: none;
+  }
+
+  .responsive-table tbody{
+    display: flex;
+    flex-direction: column;
   }
 
   .responsive-table tr {
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
+    background: linear-gradient(145deg, #f3f3f3, #e3e3e3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    overflow: hidden;
+    padding: 15px;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .responsive-table tr:hover {
+    transform: scale(1.02);
+  }
+  
+  .responsive-table td {
+    display: block;
+    text-align: left;
+    padding: 10px;
+    position: relative;
+    border-bottom: 1px solid #ddd;
+    background-color: transparent;
+  }
+  
+  /* Use data-label to show the header name before the td value */
+  .responsive-table td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+    color: #3b82f6;
+    font-size: 0.85em;
+  }
+
+  .responsive-table td:last-child {
+    border-bottom: 0;
+  }
+
+  /* Styling for buttons on mobile */
+  .btn {
+    display: inline-block;
+    width: calc(50% - 10px);
+    margin: 5px;
+  }
+
+  .btn.approve-btn {
+    background-color: #34d399;
+    box-shadow: 0 4px 6px rgba(52, 211, 153, 0.4);
+  }
+
+  .btn.decline-btn {
+    background-color: #ef4444;
+    box-shadow: 0 4px 6px rgba(239, 68, 68, 0.4);
+  }
+
+  /* Ensure that buttons and actions are aligned properly */
+  .responsive-table tr td:last-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Improve spacing and readability on small screens */
+  .dashboard-container {
+    padding: 10px;
+  }
+
+  h2, h3 {
+    font-size: 1.5em;
   }
 
   .responsive-table td {
-    display: block;
-    text-align: right;
-    padding-left: 50%;
-    position: relative;
+    padding: 15px;
   }
 
-  .responsive-table td:before {
-    content: attr(data-label);
-    position: absolute;
-    left: 0;
-    width: 45%;
-    padding-left: 10px;
-    font-weight: bold;
+  .responsive-table tr {
+    padding: 15px 0;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Smooth scrolling for mobile */
+  body {
+    scroll-behavior: smooth;
+  }
+
+  /* Ensure buttons are clearly visible on mobile */
+  .btn {
+    font-size: 1em;
   }
 }
