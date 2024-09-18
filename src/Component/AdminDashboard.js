@@ -1,39 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Modal from "./Modal"; 
-import "./adminDashboard.css"; 
+import Modal from "./Modal";
+import "./adminDashboard.css";
 
 const AdminDashboard = ({ isAdmin }) => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(""); 
+  const [modalType, setModalType] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!isAdmin) {
       navigate("/login");
+    } else {
+      fetchUsers();
     }
-
-    fetch("/Data/userData.json")
-      .then((res) => res.json())
-      .then((data) => setUsers(data))
-      .catch((error) => console.error("Error fetching user data:", error));
   }, [isAdmin, navigate]);
 
-  const handleDepositAction = async (userId, amount, action) => {
+  const fetchUsers = async () => {
     try {
-      const response = await fetch("/api/deposit", {
+      const response = await fetch("http://127.0.0.1:5000/users");
+      if (!response.ok) throw new Error("Error fetching user data");
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  const handleDepositAction = async (user_id, amount, action) => {
+    try {
+      const response = await fetch("http://127.0.0.1:5000/depositConfirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId, amount, action }),
+        body: JSON.stringify({ user_id, amount }), // Adjusted based on API
       });
 
       const result = await response.json();
       if (response.ok) {
-        alert(`Deposit ${action} for User ID: ${userId}`);
+        alert(`Deposit ${action} for User ID: ${user_id}`);
+        fetchUsers(); // Refresh user data
       } else {
         alert(`Error: ${result.message}`);
       }
@@ -42,24 +51,25 @@ const AdminDashboard = ({ isAdmin }) => {
       alert("Error processing the request.");
     }
 
-    setSelectedUser({ userId, amount });
+    setSelectedUser({ user_id, amount });
     setModalType("deposit");
     setShowModal(true);
   };
 
-  const handleWithdrawAction = async (userId, amount) => {
+  const handleWithdrawAction = async (user_id, amount) => {
     try {
-      const response = await fetch("/api/withdraw", {
+      const response = await fetch("http://127.0.0.1:5000/withdrawConfirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId, amount }),
+        body: JSON.stringify({ user_id, amount }),
       });
 
       const result = await response.json();
       if (response.ok) {
-        alert(`Withdraw accepted for User ID: ${userId}`);
+        alert(`Withdraw accepted for User ID: ${user_id}`);
+        fetchUsers(); // Refresh user data
       } else {
         alert(`Error: ${result.message}`);
       }
@@ -68,9 +78,21 @@ const AdminDashboard = ({ isAdmin }) => {
       alert("Error processing the request.");
     }
 
-    setSelectedUser({ userId, amount });
+    setSelectedUser({ user_id, amount });
     setModalType("withdraw");
     setShowModal(true);
+  };
+
+  const handleDeclineAction = async (user_id) => {
+    try {
+      // You may want to add logic here to decline the transaction
+      alert(`Decline request for User ID: ${user_id}`);
+      // Refresh user data if necessary
+      fetchUsers();
+    } catch (error) {
+      console.error("Error declining request:", error);
+      alert("Error processing the request.");
+    }
   };
 
   const closeModal = () => {
@@ -88,7 +110,6 @@ const AdminDashboard = ({ isAdmin }) => {
           <tr>
             <th>UserId</th>
             <th>Username</th>
-            <th>User Password</th>
             <th>Balance</th>
             <th>Deposit Amount</th>
             <th>Deposit Status</th>
@@ -97,53 +118,47 @@ const AdminDashboard = ({ isAdmin }) => {
           </tr>
         </thead>
         <tbody>
-          {users.map(
-            (user) =>
-              user.deposit.status === "pending" && (
-                <tr key={user.userId}>
-                  <td data-label="UserId">{user.userId}</td>
-                  <td data-label="Username">{user.userName}</td>
-                  <td data-label="User Password">{user.userPassword}</td>
-                  <td data-label="Balance">{user.balance}</td>
-                  <td data-label="Deposit Amount">{user.deposit.amount}</td>
-                  <td data-label="Deposit Status">
-                    {user.deposit.status || "N/A"}
-                  </td>
-                  <td data-label="Deposit Receipt">
-                    {user.deposit.image ? (
-                      <a
-                        href={user.deposit.image}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        View Receipt
-                      </a>
-                    ) : (
-                      "N/A"
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      className="btn approve-btn"
-                      onClick={() =>
-                        handleDepositAction(
-                          user.userId,
-                          user.deposit.amount,
-                          "approve"
-                        )
-                      }
+          {users.map((user) =>
+            user.deposit_status === "pending" ? (
+              <tr key={user.id}>
+                <td data-label="UserId">{user.id}</td>
+                <td data-label="Username">{user.username}</td>
+                <td data-label="Balance">{user.balance}</td>
+                <td data-label="Deposit Amount">{user.deposit}</td>
+                <td data-label="Deposit Status">
+                  {user.deposit_status || "N/A"}
+                </td>
+                <td data-label="Deposit Receipt">
+                  {user.transaction_image ? (
+                    <a
+                      href={user.transaction_image}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      Approve
-                    </button>
-                    <button
-                      className="btn decline-btn"
-                      onClick={() => alert("Decline")}
-                    >
-                      Decline
-                    </button>
-                  </td>
-                </tr>
-              )
+                      View Receipt
+                    </a>
+                  ) : (
+                    "N/A"
+                  )}
+                </td>
+                <td>
+                  <button
+                    className="btn approve-btn"
+                    onClick={() =>
+                      handleDepositAction(user.id, user.deposit, "approve")
+                    }
+                  >
+                    Approve
+                  </button>
+                  <button
+                    className="btn decline-btn"
+                    onClick={() => handleDeclineAction(user.id)}
+                  >
+                    Decline
+                  </button>
+                </td>
+              </tr>
+            ) : null
           )}
         </tbody>
       </table>
@@ -154,7 +169,6 @@ const AdminDashboard = ({ isAdmin }) => {
           <tr>
             <th>UserId</th>
             <th>Username</th>
-            <th>User Password</th>
             <th>Balance</th>
             <th>Withdraw Amount</th>
             <th>Withdraw Status</th>
@@ -162,33 +176,26 @@ const AdminDashboard = ({ isAdmin }) => {
           </tr>
         </thead>
         <tbody>
-          {users.map(
-            (user) =>
-              user.withdrawal.status === "pending" && (
-                <tr key={user.userId}>
-                  <td data-label="User Id">{user.userId}</td>
-                  <td data-label="User Name">{user.userName}</td>
-                  <td data-label="User Password">{user.userPassword}</td>
-                  <td data-label="User Balance">{user.balance}</td>
-                  <td data-label="User Withdraw">{user.withdrawal.amount}</td>
-                  <td data-label="User Withdraw Status">
-                    {user.withdrawal.status || "N/A"}
-                  </td>
-                  <td>
-                    <button
-                      className="btn approve-btn"
-                      onClick={() =>
-                        handleWithdrawAction(
-                          user.userId,
-                          user.withdrawal.amount
-                        )
-                      }
-                    >
-                      Accept
-                    </button>
-                  </td>
-                </tr>
-              )
+          {users.map((user) =>
+            user.withdraw_status === "pending" ? (
+              <tr key={user.id}>
+                <td data-label="UserId">{user.id}</td>
+                <td data-label="Username">{user.username}</td>
+                <td data-label="Balance">{user.balance}</td>
+                <td data-label="Withdraw Amount">{user.withdraw}</td>
+                <td data-label="Withdraw Status">
+                  {user.withdraw_status || "N/A"}
+                </td>
+                <td>
+                  <button
+                    className="btn approve-btn"
+                    onClick={() => handleWithdrawAction(user.id, user.withdraw)}
+                  >
+                    Accept
+                  </button>
+                </td>
+              </tr>
+            ) : null
           )}
         </tbody>
       </table>
@@ -196,7 +203,7 @@ const AdminDashboard = ({ isAdmin }) => {
       <Modal
         show={showModal}
         onClose={closeModal}
-        userId={selectedUser?.userId}
+        userId={selectedUser?.user_id}
         amount={selectedUser?.amount}
         type={modalType}
       />
