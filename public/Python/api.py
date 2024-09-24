@@ -1,17 +1,19 @@
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
+import subprocess
+import json
+import os
 from flask_cors import CORS
 
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
-# MongoDB connection URI
-uri = 'mongodb+srv://Payment:payment123@cluster0.enjvvgg.mongodb.net/Payment?retryWrites=true&w=majority'
+uri = 'mongodb+srv://Payment:payment123@cluster0.enjvvgg.mongodb.net/Payment?retryWrites=true&w=majority&appName=Cluster0'
 
 # MongoDB setup
 client = MongoClient(uri)
-db = client['Payment']  # Database name
-users_collection = db['users']  # Collection name
+db = client['mydatabase']
+users_collection = db['users']
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -24,8 +26,8 @@ def signup():
     balance = data.get('balance', 0)  # Default value is 0 if not provided
     withdraw = data.get('withdraw', 0)  # Default value is 0 if not provided
     deposit = data.get('deposit', 0)  # Default value is 0 if not provided
-    deposit_status = data.get('deposit_status', 'pending')  # Default is 'pending'
-    withdraw_status = data.get('withdraw_status', 'pending')  # Default is 'pending'
+    deposit_status = data.get('deposit_status', None)  # Default is 'pending'
+    withdraw_status = data.get('withdraw_status', None)  # Default is 'pending'
     transaction_image = data.get('transaction_image', None)  # Default is None (if not provided)
 
     # Validate the required fields
@@ -49,7 +51,20 @@ def signup():
         'transaction_image': transaction_image
     })
 
+    # Call the Selenium script (assuming it's in the same folder)
+    try:
+        script_path = os.path.join(os.path.dirname(__file__), 'selenium_user_add.py')
+        result = subprocess.run(
+            ['py', script_path, json.dumps(data)],
+            capture_output=True,
+            text=True
+        )
+        print(result.stdout)  # Print output from the Selenium script
+    except Exception as e:
+        return jsonify({'error': f'Failed to run Selenium script: {str(e)}'}), 500
+
     return jsonify({'message': 'User created successfully'}), 201
+
 
 @app.route('/withdrawConfirm', methods=['POST'])
 def confirm_withdraw():
@@ -80,6 +95,7 @@ def confirm_withdraw():
 
     return jsonify({'message': 'Withdrawal successful', 'balance': updated_user['balance']}), 200
 
+
 @app.route('/depositConfirm', methods=['POST'])
 def confirm_deposit():
     data = request.get_json()
@@ -105,17 +121,13 @@ def confirm_deposit():
 
     return jsonify({'message': 'Deposit successful', 'balance': updated_user['balance']}), 200
 
+
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user_by_id(user_id):
     # Fetch user from MongoDB
     user = users_collection.find_one({'id': user_id})
     if user:
-        return jsonify({
-            'username': user['username'],
-            'id': user['id'],
-            'balance': user['balance'],
-            'password': user['password']
-        }), 200
+        return jsonify({'username': user['username'], 'id': user['id'], 'balance': user['balance'], 'password':user['password']}), 200
 
     return jsonify({'error': 'User not found'}), 404
 
@@ -159,6 +171,7 @@ def handle_deposit():
 
     return jsonify({'message': 'Deposit recorded, pending approval'}), 200
 
+
 @app.route('/withdraw', methods=['POST'])
 def handle_withdraw():
     data = request.get_json()
@@ -190,15 +203,6 @@ def handle_withdraw():
     )
 
     return jsonify({'message': 'Withdrawal recorded, pending approval'}), 200
-
-@app.route('/test_connection', methods=['GET'])
-def test_connection():
-    try:
-        # Try to retrieve the server status
-        client.admin.command('ping')
-        return jsonify({'message': 'MongoDB connection successful'}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
