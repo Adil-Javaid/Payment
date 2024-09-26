@@ -22,7 +22,7 @@ def signup():
     user_id = data.get('user_id')
     username = data.get('username')
     password = data.get('password')
-    account_number = data.get(None)  # New field
+    account_number = data.get('account_number', None)  # New field
     balance = data.get('balance', 0)
     withdraw = data.get('withdraw', 0)
     deposit = data.get('deposit', 0)
