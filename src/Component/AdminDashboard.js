@@ -18,6 +18,7 @@ const AdminDashboard = ({ isAdmin }) => {
     }
   }, [isAdmin, navigate]);
 
+  
   const fetchUsers = async () => {
     try {
       const response = await fetch("http://127.0.0.1:5000/users");
@@ -83,12 +84,52 @@ const AdminDashboard = ({ isAdmin }) => {
     setShowModal(true);
   };
 
-  const handleDeclineAction = async (user_id) => {
+  const handleWithDrawDeclineAction = async (user_id) => {
     try {
       // You may want to add logic here to decline the transaction
-      alert(`Decline request for User ID: ${user_id}`);
+      const response = await fetch("http://127.0.0.1:5000/withdrawDecline", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert(`Decline request for User ID: ${user_id}`);
       // Refresh user data if necessary
       fetchUsers();
+      }
+      else{
+        alert(`Error: ${result.message}`);
+      }
+    } catch (error) {
+      console.error("Error declining request:", error);
+      alert("Error processing the request.");
+    }
+  };
+
+  const handleDepositDeclineAction = async (user_id) => {
+    try {
+      // You may want to add logic here to decline the transaction
+      const response = await fetch("http://127.0.0.1:5000/depositDecline", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id }),
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        alert(`Decline request for User ID: ${user_id}`);
+      // Refresh user data if necessary
+      fetchUsers();
+      }
+      else{
+        alert(`Error: ${result.message}`);
+      }
     } catch (error) {
       console.error("Error declining request:", error);
       alert("Error processing the request.");
@@ -152,7 +193,7 @@ const AdminDashboard = ({ isAdmin }) => {
                   </button>
                   <button
                     className="btn decline-btn"
-                    onClick={() => handleDeclineAction(user.id)}
+                    onClick={() => handleDepositDeclineAction(user.id)}
                   >
                     Decline
                   </button>
@@ -172,6 +213,7 @@ const AdminDashboard = ({ isAdmin }) => {
             <th>Balance</th>
             <th>Withdraw Amount</th>
             <th>Withdraw Status</th>
+            <th>Account Number</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -186,12 +228,20 @@ const AdminDashboard = ({ isAdmin }) => {
                 <td data-label="Withdraw Status">
                   {user.withdraw_status || "N/A"}
                 </td>
+                <td data-label="Account Number">{user.account_number}</td>
                 <td>
                   <button
                     className="btn approve-btn"
                     onClick={() => handleWithdrawAction(user.id, user.withdraw)}
                   >
                     Accept
+                  </button>
+
+                  <button
+                    className="btn decline-btn"
+                    onClick={() => handleWithDrawDeclineAction(user.id)}
+                  >
+                    Decline
                   </button>
                 </td>
               </tr>
