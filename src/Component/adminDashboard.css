@@ -188,3 +188,18 @@ h2, h3 {
   transform: translateY(-4px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.btn.approve-btn:disabled {
+  background-color: #a7f3d0; /* Lighter green */
+}
+
+.btn.decline-btn:disabled {
+  background-color: #fca5a5; /* Lighter red */
+}

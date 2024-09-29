@@ -18,26 +18,31 @@ const AdminDashboard = ({ isAdmin }) => {
     }
   }, [isAdmin, navigate]);
 
-  
   const fetchUsers = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/users");
+      const response = await fetch("http://127.0.0.1:5000/transactions");
       if (!response.ok) throw new Error("Error fetching user data");
       const data = await response.json();
       setUsers(data);
+      console.log(data); // Updated to log the fetched data
     } catch (error) {
       console.error("Error fetching user data:", error);
     }
   };
 
-  const handleDepositAction = async (user_id, amount, action) => {
+  const handleDepositAction = async (
+    user_id,
+    amount,
+    transaction_id,
+    action
+  ) => {
     try {
       const response = await fetch("http://127.0.0.1:5000/depositConfirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user_id, amount }), // Adjusted based on API
+        body: JSON.stringify({ user_id, amount, transaction_id }),
       });
 
       const result = await response.json();
@@ -52,19 +57,19 @@ const AdminDashboard = ({ isAdmin }) => {
       alert("Error processing the request.");
     }
 
-    setSelectedUser({ user_id, amount });
+    setSelectedUser({ user_id, amount, transaction_id });
     setModalType("deposit");
     setShowModal(true);
   };
 
-  const handleWithdrawAction = async (user_id, amount) => {
+  const handleWithdrawAction = async (user_id, amount, transaction_id) => {
     try {
       const response = await fetch("http://127.0.0.1:5000/withdrawConfirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user_id, amount }),
+        body: JSON.stringify({ user_id, amount, transaction_id }),
       });
 
       const result = await response.json();
@@ -79,29 +84,28 @@ const AdminDashboard = ({ isAdmin }) => {
       alert("Error processing the request.");
     }
 
-    setSelectedUser({ user_id, amount });
+    setSelectedUser({ user_id, amount, transaction_id });
     setModalType("withdraw");
     setShowModal(true);
   };
 
-  const handleWithDrawDeclineAction = async (user_id) => {
+  const handleWithDrawDeclineAction = async (user_id, transaction_id) => {
     try {
-      // You may want to add logic here to decline the transaction
       const response = await fetch("http://127.0.0.1:5000/withdrawDecline", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user_id }),
+        body: JSON.stringify({ user_id, transaction_id }),
       });
 
       const result = await response.json();
       if (response.ok) {
-        alert(`Decline request for User ID: ${user_id}`);
-      // Refresh user data if necessary
-      fetchUsers();
-      }
-      else{
+        alert(
+          `Decline request for User ID: ${user_id}, Transaction ID: ${transaction_id}`
+        );
+        fetchUsers();
+      } else {
         alert(`Error: ${result.message}`);
       }
     } catch (error) {
@@ -110,24 +114,23 @@ const AdminDashboard = ({ isAdmin }) => {
     }
   };
 
-  const handleDepositDeclineAction = async (user_id) => {
+  const handleDepositDeclineAction = async (user_id, transaction_id) => {
     try {
-      // You may want to add logic here to decline the transaction
       const response = await fetch("http://127.0.0.1:5000/depositDecline", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ user_id }),
+        body: JSON.stringify({ user_id, transaction_id }),
       });
 
       const result = await response.json();
       if (response.ok) {
-        alert(`Decline request for User ID: ${user_id}`);
-      // Refresh user data if necessary
-      fetchUsers();
-      }
-      else{
+        alert(
+          `Decline request for User ID: ${user_id}, Transaction ID: ${transaction_id}`
+        );
+        fetchUsers();
+      } else {
         alert(`Error: ${result.message}`);
       }
     } catch (error) {
@@ -150,9 +153,10 @@ const AdminDashboard = ({ isAdmin }) => {
         <thead>
           <tr>
             <th>UserId</th>
-            <th>Username</th>
-            <th>Balance</th>
-            <th>Deposit Amount</th>
+            <th>Transaction Id</th>
+            {/* <th>Username</th> */}
+            {/* <th>Balance</th> */}
+            <th>Amount</th>
             <th>Deposit Status</th>
             <th>Deposit Receipt</th>
             <th>Action</th>
@@ -160,15 +164,14 @@ const AdminDashboard = ({ isAdmin }) => {
         </thead>
         <tbody>
           {users.map((user) =>
-            user.deposit_status === "pending" ? (
-              <tr key={user.id}>
-                <td data-label="UserId">{user.id}</td>
-                <td data-label="Username">{user.username}</td>
-                <td data-label="Balance">{user.balance}</td>
-                <td data-label="Deposit Amount">{user.deposit}</td>
-                <td data-label="Deposit Status">
-                  {user.deposit_status || "N/A"}
-                </td>
+            user.type === "deposit" ? (
+              <tr key={user.transaction_id}>
+                <td data-label="UserId">{user.user_id}</td>
+                <td data-label="Transaction Id">{user.transaction_id}</td>
+                {/* <td data-label="Username">{user.username}</td>
+                <td data-label="Balance">{user.balance}</td> */}
+                <td data-label="Amount">{user.amount}</td>
+                <td data-label="Deposit Status">{user.status || "N/A"}</td>
                 <td data-label="Deposit Receipt">
                   {user.transaction_image ? (
                     <a
@@ -186,14 +189,26 @@ const AdminDashboard = ({ isAdmin }) => {
                   <button
                     className="btn approve-btn"
                     onClick={() =>
-                      handleDepositAction(user.id, user.deposit, "approve")
+                      handleDepositAction(
+                        user.user_id,
+                        user.amount,
+                        user.transaction_id,
+                        "approve"
+                      )
                     }
+                    disabled={user.status === "approved"}
                   >
                     Approve
                   </button>
                   <button
                     className="btn decline-btn"
-                    onClick={() => handleDepositDeclineAction(user.id)}
+                    onClick={() =>
+                      handleDepositDeclineAction(
+                        user.user_id,
+                        user.transaction_id
+                      )
+                    }
+                    disabled={user.status === "approved"}
                   >
                     Decline
                   </button>
@@ -209,8 +224,9 @@ const AdminDashboard = ({ isAdmin }) => {
         <thead>
           <tr>
             <th>UserId</th>
-            <th>Username</th>
-            <th>Balance</th>
+            <th>Transaction Id</th>
+            {/* <th>Username</th>
+            <th>Balance</th> */}
             <th>Withdraw Amount</th>
             <th>Withdraw Status</th>
             <th>Account Number</th>
@@ -219,27 +235,37 @@ const AdminDashboard = ({ isAdmin }) => {
         </thead>
         <tbody>
           {users.map((user) =>
-            user.withdraw_status === "pending" ? (
-              <tr key={user.id}>
-                <td data-label="UserId">{user.id}</td>
-                <td data-label="Username">{user.username}</td>
-                <td data-label="Balance">{user.balance}</td>
-                <td data-label="Withdraw Amount">{user.withdraw}</td>
-                <td data-label="Withdraw Status">
-                  {user.withdraw_status || "N/A"}
-                </td>
+            user.type === "withdraw" ? (
+              <tr key={user.transaction_id}>
+                <td data-label="UserId">{user.user_id}</td>
+                <td data-label="Transaction Id">{user.transaction_id}</td>
+                <td data-label="Amount">{user.amount}</td>
+                <td data-label="Withdraw Status">{user.status || "N/A"}</td>
                 <td data-label="Account Number">{user.account_number}</td>
                 <td>
                   <button
                     className="btn approve-btn"
-                    onClick={() => handleWithdrawAction(user.id, user.withdraw)}
+                    onClick={() =>
+                      handleWithdrawAction(
+                        user.user_id,
+                        user.amount, // Changed from user.withdraw to user.amount for consistency
+                        user.transaction_id
+                      )
+                    }
+                    disabled={user.status === "approved"}
                   >
                     Accept
                   </button>
 
                   <button
                     className="btn decline-btn"
-                    onClick={() => handleWithDrawDeclineAction(user.id)}
+                    onClick={() =>
+                      handleWithDrawDeclineAction(
+                        user.user_id,
+                        user.transaction_id
+                      )
+                    }
+                    disabled={user.status === "approved"}
                   >
                     Decline
                   </button>
